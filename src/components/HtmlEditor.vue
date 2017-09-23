@@ -2,13 +2,18 @@
   <div class="ipanel-html-editor">
     <div class="html-editor-container">
       <i-element
+        class-name="html-editor-target"
         v-for="element in elements"
         :key="element.name"
         :element="element"
+        :curParEle="curParEle"
         :editing="editing"
         @style-change="changeStyle"
         @edit-element="editElement">
       </i-element>
+    </div>
+    <div class="html-editor-oprater">
+      <button @click="save" class="button">保存</button>
     </div>
     <div class="html-editor-meta">
       <div
@@ -28,8 +33,30 @@ export default {
   data () {
     return {
       maxId: 0,
-      editing: -1,
-      elements: [],
+      editing: 0,
+      curParEle: {
+        style: {
+          height: 0,
+          width: 0
+        }
+      },
+      elements: [{
+        id: 0,
+        name: 'container',
+        style: {
+          top: '0px',
+          left: '0px',
+          width: '1024px',
+          height: '720px',
+          borderRadius: '0px',
+          backgroundColor: '#fff',
+          zIndex: 1
+        },
+        inParent: true,
+        tag: 'div',
+        editable: false,
+        children: []
+      }],
       eleTemp: [
         {
           name: 'box',
@@ -56,11 +83,20 @@ export default {
   methods: {
     newElement (temp) {
       this.maxId ++
+      let pId = this.editing
       let newEle = {
-        id: this.maxId
+        id: this.maxId,
+        pId
       }
       $.extend(true, newEle, temp)
-      this.elements.push(newEle)
+      util.findInTree(this.elements, function (ele, i, arr) {
+        if (ele.id === pId) {
+          ele.children.push(newEle)
+          return false
+        } else {
+          return true
+        }
+      })
     },
     changeStyle (changes) {
       util.findInTree(this.elements, function (ele, i, arr) {
@@ -73,16 +109,21 @@ export default {
       })
     },
     editElement (id) {
+      console.log(id)
       this.editing = id
+    },
+    save () {
+      var htmlStr = util.creatHtml(this.elements)
+      console.log(htmlStr)
     }
   },
   mounted () {
-    var self = this
+    this.curParEle = this.elements[0]
     this.$nextTick(() => {
-      $(this.$el).on('mousedown', function (e) {
-        e.stopPropagation()
-        self.editing = -1
-      })
+      let height = parseInt(this.curParEle.style.height)
+      let cHeight = $('.html-editor-container').height()
+      let scale = cHeight / height
+      $('.html-editor-target').css('transform', 'scale(' + scale + ')')
     })
   }
 }
@@ -96,10 +137,21 @@ export default {
   background-color: #191919;
 }
 .html-editor-container{
-  width: 100%;
+  width: calc(100% - 220px);
   height: calc(100% - 220px);
-  background-color: #fff;
+  float: left;
   position: relative;
+}
+.html-editor-oprater{
+  width: 220px;
+  height: calc(100% - 220px);
+  margin-bottom: 20px;
+  background-color: #fff;
+  float: left;
+}
+.html-editor-target{
+  -webkit-transform-origin-x: left;
+  -webkit-transform-origin-y: top;
 }
 .html-editor-meta{
   margin-top: 20px;
@@ -111,6 +163,22 @@ export default {
 }
 .html-editor-meta div{
   margin: 0 20px;
+}
+.button{
+  height: 36px;
+  width: 100%;
+  line-height: 36px;
+  padding: 0 20px;
+  border: none;
+  background-color: #20A0FF;
+  color: #fff;
+  outline: none;
+}
+.button:hover{
+  background-color: #58B7FF;
+}
+.button:active{
+  background-color: #1D8CE0;
 }
 </style>
 <style>
