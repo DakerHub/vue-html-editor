@@ -64,15 +64,33 @@
               @blur="(e) => {validInput(e, 'left')}">
               <span class="input-right">px</span>
           </el-form-item>
-          <el-form-item label="颜色">
+          <el-form-item label="背景颜色">
             <span class="color-preview" :style="{backgroundColor: curEle.style.backgroundColor}"></span>
-            <el-button @click="showColorSelector" size="mini" class="color-btn">选择颜色</el-button>
+            <el-button @click="showColorSelector" :disabled="!curEle.editable" size="mini" class="color-btn">选择颜色</el-button>
+          </el-form-item>
+          <el-form-item label="圆角半径">
+            <input
+              :class="['input-left', 'input-short' , curEle.editable ? '' : 'disabled']"
+              type="number"
+              :disabled="!curEle.editable"
+              :value="parseInt(curEle.style.borderRadius || 0)"
+              @input="(e) => {editStyle(e.target.value, 'borderRadius')}"
+              @blur="(e) => {validInput(e, 'borderRadius')}">
+              <el-select 
+                v-model="unit.borderRadiusUnit" 
+                size="mini"
+                :disabled="!curEle.editable"
+                @change="() => {editStyle(parseInt(curEle.style.borderRadius), 'borderRadius')}"
+                class="select-right">
+                <el-option label="px" value="px"></el-option>
+                <el-option label="%" value="%"></el-option>
+              </el-select>
           </el-form-item>
         </el-form>
       </div>
       <button @click="save" class="button">保存</button>
     </div>
-    <color-picker v-show="colorSelectorShow" :style="CSPosition" v-model="curEle.style.backgroundColor" class="color-picker"></color-picker>
+    <color-picker v-show="colorSelectorShow" :style="CSPosition" :value="curEle.style.backgroundColor" @input="changeColor" class="color-picker"></color-picker>
   </div>
 </template>
 <script>
@@ -92,6 +110,9 @@ export default {
       CSPosition: {
         top: 0,
         left: 0
+      },
+      unit: {
+        borderRadiusUnit: 'px'
       },
       colorSelectorShow: false,
       curParEle: {
@@ -212,12 +233,19 @@ export default {
           let width = parseInt(this.curEle.style.width)
           valInt = valInt + width > 1024 ? 1024 - width : valInt
           break
+        case 'borderRadius':
+          valInt < 0 && (valInt = 0)
+          break
       }
       if (validInput) {
         e.target.value = valInt
       } else {
         var style = {}
-        valInt += 'px'
+        if (styleType === 'borderRadius') {
+          valInt += this.unit.borderRadiusUnit
+        } else {
+          valInt += 'px'
+        }
         style[styleType] = valInt
         this.changeStyle({
           id: this.editing,
@@ -243,10 +271,8 @@ export default {
       }
       this.CSPosition.top = y + 'px'
       this.CSPosition.left = x + 'px'
-      console.log(this.colorSelectorShow)
       if (!this.colorSelectorShow) {
         this.colorSelectorShow = true
-        console.log(this.colorSelectorShow)
         $(document).on('click.hideCS', function (e) {
           if ($(e.target).parents('.color-picker').length === 0) {
             $(this).off('.hideCS')
@@ -256,6 +282,9 @@ export default {
       } else {
         this.colorSelectorShow = false
       }
+    },
+    changeColor (color) {
+      this.curEle.style.backgroundColor = color.hex
     }
   },
   mounted () {
@@ -295,7 +324,7 @@ export default {
   position: fixed;
   right: 0px;
   top: calc(50% - 360px);
-  z-index: 9999;
+  z-index: 998;
 }
 .html-editor-target{
   -webkit-transform-origin-x: left;
@@ -360,6 +389,14 @@ export default {
   width: calc(100% - 30px);
   vertical-align: middle;
 }
+.input-short{
+  width: calc(100% - 60px);
+}
+.select-right{
+  width: 60px;
+  vertical-align: middle;
+  margin-top: -3px;
+}
 .input-left:hover {
   border-color: #8391a5;
 }
@@ -390,7 +427,7 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 9999;
+  z-index: 999;
 }
 .color-preview{
   display: inline-block;
@@ -422,6 +459,11 @@ export default {
 .ipanel-html-editor .el-form-item{
   margin-bottom: 0px;
   font-size: 0px;
+}
+.ipanel-html-editor .el-input__inner{
+  border-left: none;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
 }
 </style>
 
