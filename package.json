@@ -8,11 +8,14 @@
     "dev": "node build/dev-server.js",
     "start": "node build/dev-server.js",
     "build": "node build/build.js",
-    "lint": "eslint --ext .js,.vue src"
+    "lint": "eslint --ext .js,.vue src",
+    "stop": "node build/dev-stop-server.js"
   },
   "dependencies": {
     "draggabilly": "^2.1.1",
-    "vue": "^2.4.2"
+    "element-ui": "^1.4.5",
+    "vue": "^2.4.2",
+    "vue-color": "^2.4.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

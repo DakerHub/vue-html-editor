@@ -10,14 +10,14 @@
         @edit-element="editElement">
       </i-element>
     </div>
-    <span @mousedown="recodePosition($event, 0, 1)" v-show="editing === element.id && element.editable" class="dot dot-n"></span>
-    <span @mousedown="recodePosition($event, -1, 0)" v-show="editing === element.id && element.editable" class="dot dot-e"></span>
-    <span @mousedown="recodePosition($event, 1, 0)" v-show="editing === element.id && element.editable" class="dot dot-w"></span>
-    <span @mousedown="recodePosition($event, 0, -1)" v-show="editing === element.id && element.editable" class="dot dot-s"></span>
-    <span @mousedown="recodePosition($event, 1, 1)" v-show="editing === element.id && element.editable" class="dot dot-nw"></span>
-    <span @mousedown="recodePosition($event, -1, 1)" v-show="editing === element.id && element.editable" class="dot dot-ne"></span>
-    <span @mousedown="recodePosition($event, 1, -1)" v-show="editing === element.id && element.editable" class="dot dot-sw"></span>
-    <span @mousedown="recodePosition($event, -1, -1)" v-show="editing === element.id && element.editable" class="dot dot-se"></span>
+    <span @mousedown="recodePosition($event, 0, 1)" v-show="editing === element.id && element.resizeable" class="dot dot-n"></span>
+    <span @mousedown="recodePosition($event, -1, 0)" v-show="editing === element.id && element.resizeable" class="dot dot-e"></span>
+    <span @mousedown="recodePosition($event, 1, 0)" v-show="editing === element.id && element.resizeable" class="dot dot-w"></span>
+    <span @mousedown="recodePosition($event, 0, -1)" v-show="editing === element.id && element.resizeable" class="dot dot-s"></span>
+    <span @mousedown="recodePosition($event, 1, 1)" v-show="editing === element.id && element.resizeable" class="dot dot-nw"></span>
+    <span @mousedown="recodePosition($event, -1, 1)" v-show="editing === element.id && element.resizeable" class="dot dot-ne"></span>
+    <span @mousedown="recodePosition($event, 1, -1)" v-show="editing === element.id && element.resizeable" class="dot dot-sw"></span>
+    <span @mousedown="recodePosition($event, -1, -1)" v-show="editing === element.id && element.resizeable" class="dot dot-se"></span>
   </div>
 </template>
 <script>
@@ -48,6 +48,18 @@ export default {
       oriLeft: 0,
       mouseInterval: 0,
       draggie: null
+    }
+  },
+  watch: {
+    element: {
+      immediate: true,
+      deep: true,
+      handler (element) {
+        if (this.draggie) {
+          this.draggie.position.x = parseInt(element.style.left)
+          this.draggie.position.y = parseInt(element.style.top)
+        }
+      }
     }
   },
   methods: {
@@ -123,7 +135,7 @@ export default {
       this.elementCopy.style.left = left
       this.elementCopy.style.height = height
       this.elementCopy.style.width = width
-      this.$emit('style-change', { id: this.elementCopy.id, style: { top, height, left, width } })
+      // this.$emit('style-change', { id: this.elementCopy.id, style: { top, height, left, width } })
     },
     recodePosition (e, horDir, verDir) {
       var self = this
@@ -145,8 +157,8 @@ export default {
         self.draggie.enable()
       })
     },
-    editElement (id) {
-      this.$emit('edit-element', id)
+    editElement (ele) {
+      this.$emit('edit-element', ele)
     }
   },
   mounted () {
@@ -158,16 +170,18 @@ export default {
       this.draggie = draggie
       draggie.on('pointerDown', function (e, pointer) {
         pointer.stopPropagation()
-        self.$emit('edit-element', self.elementCopy.id)
+        self.elementCopy.editable && self.$emit('edit-element', self.elementCopy)
       })
       draggie.on('pointerUp', function (e, pointer) {
-        let left = this.position.x + 'px'
-        let top = this.position.y + 'px'
-        self.elementCopy.style.top = top
-        self.elementCopy.style.left = left
-        self.$emit('style-change', { id: self.elementCopy.id, style: { top, left } })
+        if (self.elementCopy.moveable) {
+          let left = this.position.x + 'px'
+          let top = this.position.y + 'px'
+          self.elementCopy.style.top = top
+          self.elementCopy.style.left = left
+          // self.$emit('style-change', { id: self.elementCopy.id, style: { top, left } })
+        }
       })
-      if (!this.element.editable) {
+      if (!this.element.moveable) {
         draggie.disable()
       }
     })
@@ -186,13 +200,13 @@ export default {
 }
 .ipanel-element:not(.no-edit):hover{
   cursor: move;
-  background-color: #0af !important;
+  /* background-color: #0af !important; */
   outline: thin dashed #0af;
   outline-offset: 2px;
 }
 .ipanel-element.editing:not(.no-edit){
   outline: thin dashed #00d0cd;
-  background-color: #00d0cd !important;
+  /* background-color: #00d0cd !important; */
   outline-offset: 2px;
 }
 .ipanel-element.is-dragging:not(.no-edit){
