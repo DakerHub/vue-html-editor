@@ -14,6 +14,7 @@ function creatHtml (eles) {
   var htmlStr = ''
   eles.forEach(function (ele) {
     htmlStr += '<div class="ipanel-element" style="' + obj2Str(ele.style) + '">'
+    htmlStr += '<span>' + (ele.text || '') + '</span>'
     htmlStr += '<div class="ipanel-element-inner">'
     Array.isArray(ele.children) && (htmlStr += creatHtml(ele.children))
     htmlStr += '</div></div>'
@@ -28,6 +29,9 @@ function obj2Str (obj) {
     let lowKey = key
     Array.isArray(result) && result.forEach(function (ca) {
       lowKey = lowKey.replace(ca, '-' + ca.toLowerCase())
+      if (lowKey[0] === '-') {
+        lowKey = lowKey.substring(1)
+      }
     }, this)
     str += lowKey + ':' + obj[key] + ';'
   }

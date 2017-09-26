@@ -1,18 +1,24 @@
 <template>
   <div class="ipanel-html-editor">
+    <!-- 元素模板选择区域begin -->
     <div class="html-editor-meta">
-      <div
-        v-for="temp in eleTemp"
-        :key="temp.name"
-        :style="temp.style"
-        @click="newElement(temp)">
+      <div class="html-editor-meta-inner">
+        <div
+          class="html-editor-meta-temp"
+          v-for="temp in eleTemp"
+          :key="temp.name"
+          :style="temp.style"
+          @click="newElement(temp)">{{temp.text}}</div>
       </div>
     </div>
+    <!-- 元素模板选择区域end -->
+    
+    <!-- 元素编辑区域begin -->
     <div class="html-editor-container">
       <i-element
         class-name="html-editor-target"
         v-for="element in elements"
-        :key="element.name"
+        :key="element.id"
         :element="element"
         :curParEle="curParEle"
         :editing="editing"
@@ -20,60 +26,79 @@
         @edit-element="editElement">
       </i-element>
     </div>
+    <!-- 元素编辑区域end -->
+    
+    <!-- 元素属性编辑区域begin -->
     <div class="html-editor-oprater">
       <div class="html-editor-oprater-title">属性编辑</div>
       <div class="html-editor-oprater-content">
-        <el-form label-width="90px" @blur="console.log(arguments)">
+        <el-form label-width="90px">
+          <!-- 调节宽度begin -->
           <el-form-item label="宽度(width)">
             <input
               :class="['input-left', curEle.resizeable ? '' : 'disabled']"
               type="number"
-              :value="parseInt(curEle.style.width || 0)"
+              :value="parseInt(curEle.style.width || 0) || 0"
               :disabled="!curEle.resizeable"
               @input="(e) => {editStyle(e.target.value, 'width')}"
               @blur="(e) => {validInput(e, 'width')}">
               <span class="input-right">px</span>
           </el-form-item>
+          <!-- 调节宽度end -->
+
+          <!-- 调节高度begin -->
           <el-form-item label="高度(height)">
              <input
               :class="['input-left', curEle.resizeable ? '' : 'disabled']"
               type="number"
               :disabled="!curEle.resizeable"
-              :value="parseInt(curEle.style.height || 0)"
+              :value="parseInt(curEle.style.height || 0) || 0"
               @input="(e) => {editStyle(e.target.value, 'height')}"
               @blur="(e) => {validInput(e, 'height')}">
               <span class="input-right">px</span>
           </el-form-item>
+          <!-- 调节高度end -->
+
+          <!-- 调节上边距begin -->
           <el-form-item label="上边距(top)">
             <input
               :class="['input-left', curEle.moveable ? '' : 'disabled']"
               type="number"
               :disabled="!curEle.moveable"
-              :value="parseInt(curEle.style.top || 0)"
+              :value="parseInt(curEle.style.top || 0) || 0"
               @input="(e) => {editStyle(e.target.value, 'top')}"
               @blur="(e) => {validInput(e, 'top')}">
               <span class="input-right">px</span>
           </el-form-item>
+          <!-- 调节上边距end -->
+
+          <!-- 调节左边距begin -->
           <el-form-item label="左边距(left)">
             <input
               :class="['input-left', curEle.moveable ? '' : 'disabled']"
               type="number"
               :disabled="!curEle.moveable"
-              :value="parseInt(curEle.style.left || 0)"
+              :value="parseInt(curEle.style.left || 0) || 0"
               @input="(e) => {editStyle(e.target.value, 'left')}"
               @blur="(e) => {validInput(e, 'left')}">
               <span class="input-right">px</span>
           </el-form-item>
+          <!-- 调节左边距end -->
+
+          <!-- 选择背景颜色begin -->
           <el-form-item label="背景颜色">
             <span class="color-preview" :style="{backgroundColor: curEle.style.backgroundColor}"></span>
-            <el-button @click="showColorSelector" :disabled="!curEle.editable" size="mini" class="color-btn">选择颜色</el-button>
+            <el-button @click="(e) => { showColorSelector(e, 'bgColorSelectorShow') }" :disabled="!curEle.editable" size="mini" class="color-btn">选择颜色</el-button>
           </el-form-item>
+          <!-- 选择背景颜色end -->
+
+          <!-- 调节圆角半径begin -->
           <el-form-item label="圆角半径">
             <input
               :class="['input-left', 'input-short' , curEle.editable ? '' : 'disabled']"
               type="number"
               :disabled="!curEle.editable"
-              :value="parseInt(curEle.style.borderRadius || 0)"
+              :value="parseInt(curEle.style.borderRadius || 0) || 0"
               @input="(e) => {editStyle(e.target.value, 'borderRadius')}"
               @blur="(e) => {validInput(e, 'borderRadius')}">
               <el-select 
@@ -86,11 +111,76 @@
                 <el-option label="%" value="%"></el-option>
               </el-select>
           </el-form-item>
+          <!-- 调节圆角半径end -->
+
+          <!-- 文字输入begin -->
+          <el-form-item label="文字内容">
+            <el-input v-model="curEle.text" :disabled="typeof curEle.text === 'undefined'" size="mini"></el-input>
+          </el-form-item>
+          <!-- 文字输入end -->
+
+          <!-- 选择文字颜色begin -->
+          <el-form-item label="文字颜色">
+            <span class="color-preview" :style="{backgroundColor: curEle.style.color}"></span>
+            <el-button @click="(e) => { showColorSelector(e, 'colorSelectorShow') }" :disabled="!curEle.text" size="mini" class="color-btn">选择颜色</el-button>
+          </el-form-item>
+          <!-- 选择文字颜色end -->
+
+          <!-- 调节文字大小begin -->
+          <el-form-item label="文字大小">
+            <input
+              :class="['input-left', curEle.text ? '' : 'disabled']"
+              type="number"
+              :disabled="!curEle.text"
+              :value="parseInt(curEle.style.fontSize || 0) || 0"
+              @input="(e) => {editStyle(e.target.value, 'fontSize')}"
+              @blur="(e) => {validInput(e, 'fontSize')}">
+              <span class="input-right">px</span>
+          </el-form-item>
+          <!-- 调节文字大小end -->
+
+          <!-- 调节文字上下边距begin -->
+          <el-form-item label="文字上下边距">
+            <input
+              :class="['input-left', curEle.text ? '' : 'disabled']"
+              type="number"
+              :disabled="!curEle.text || curEle.text === ''"
+              :value="parseInt(curEle.style.paddingTop || 0) || 0"
+              @input="(e) => {editStyle(e.target.value, 'paddingTop')}"
+              @blur="(e) => {validInput(e, 'paddingTop')}">
+              <span class="input-right">px</span>
+          </el-form-item>
+          <!-- 调节文字上下边距end -->
+
+          <!-- 调节文字上下边距begin -->
+          <el-form-item label="文字对齐">
+            <el-radio-group :disabled="!curEle.text || curEle.text === ''" v-model="curEle.style.textAlign" size="mini">
+              <el-radio-button label="left"></el-radio-button>
+              <el-radio-button label="center"></el-radio-button>
+              <el-radio-button label="right"></el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+          <!-- 调节文字上下边距end -->
+          <!-- 调节文字上下边距begin -->
+          <el-form-item label="文字加粗">
+            <el-switch
+              :disabled="!curEle.text || curEle.text === ''"
+              v-model="curEle.style.fontWeight"
+              on-text="粗"
+              off-text="细"
+              on-value="bold"
+              off-value="normal">
+            </el-switch>
+          </el-form-item>
+          <!-- 调节文字上下边距end -->
         </el-form>
       </div>
+      <button @click="del" class="button del">删除元素</button>
       <button @click="save" class="button">保存</button>
     </div>
-    <color-picker v-show="colorSelectorShow" :style="CSPosition" :value="curEle.style.backgroundColor" @input="changeColor" class="color-picker"></color-picker>
+    <!-- 元素属性编辑区域end -->
+    <color-picker v-show="bgColorSelectorShow" :style="CSPosition" :value="curEle.style.backgroundColor||'#fff'" @input="changeBgColor" class="color-picker"></color-picker>
+    <color-picker v-show="colorSelectorShow" :style="CSPosition" :value="curEle.style.color||'#fff'" @input="changeColor" class="color-picker"></color-picker>
   </div>
 </template>
 <script>
@@ -115,6 +205,7 @@ export default {
         borderRadiusUnit: 'px'
       },
       colorSelectorShow: false,
+      bgColorSelectorShow: false,
       curParEle: {
         style: {
           height: 0,
@@ -122,7 +213,7 @@ export default {
         }
       },
       curEle: {
-        id: -1,
+        id: 0,
         style: {
           top: '',
           left: '',
@@ -147,7 +238,7 @@ export default {
         },
         inParent: true,
         tag: 'div',
-        editable: true,
+        editable: false,
         moveable: false,
         resizeable: false,
         children: []
@@ -161,6 +252,7 @@ export default {
             width: '80px',
             height: '80px',
             borderRadius: '5px',
+            color: '',
             backgroundColor: '#b5b5b5',
             zIndex: 1
           },
@@ -170,6 +262,32 @@ export default {
           moveable: true,
           resizeable: true,
           children: []
+        },
+        {
+          name: 'h1',
+          style: {
+            top: '0px',
+            left: '0px',
+            width: '80px',
+            height: '',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            lineHeight: '20px',
+            display: 'inline-block',
+            textAlign: 'center',
+            paddingTop: '10px',
+            paddingBottom: '10px',
+            color: '#8c8c8c',
+            borderRadius: '0px',
+            backgroundColor: '',
+            zIndex: 1
+          },
+          text: '文字标题',
+          inParent: true,
+          tag: 'h1',
+          editable: true,
+          moveable: true,
+          resizeable: ['-10', '10']
         }
       ]
     }
@@ -189,7 +307,7 @@ export default {
       $.extend(true, newEle, temp)
       util.findInTree(this.elements, function (ele, i, arr) {
         if (ele.id === pId) {
-          ele.children.push(newEle)
+          ele.children && ele.children.push(newEle)
           return false
         } else {
           return true
@@ -207,12 +325,41 @@ export default {
       })
     },
     editElement (ele) {
+      var self = this
+      let pId = ele.pId
       this.editing = ele.id
       this.curEle = ele
+      util.findInTree(this.elements, function (ele, i, arr) {
+        if (ele.id === pId) {
+          self.curParEle = ele
+          console.log(ele.style.height, ele.style.width)
+          return false
+        } else {
+          return true
+        }
+      })
     },
     save () {
       var htmlStr = util.creatHtml(this.elements)
       console.log(htmlStr)
+    },
+    del () {
+      var self = this
+      util.findInTree(this.elements, function (ele, i, arr) {
+        if (ele.editable && ele.id === self.editing) {
+          arr.splice(i, 1)
+          return false
+        } else {
+          return true
+        }
+      })
+      this.curEle = {
+        id: 0,
+        style: {
+          backgroundColor: ''
+        }
+      }
+      this.editing = 0
     },
     editStyle (val, styleType, validInput, e) {
       var valInt = parseInt(val || 1)
@@ -236,6 +383,12 @@ export default {
         case 'borderRadius':
           valInt < 0 && (valInt = 0)
           break
+        case 'fontSize':
+          valInt < 12 && (valInt = 12)
+          break
+        case 'paddingTop':
+          valInt < 0 && (valInt = 0)
+          break
       }
       if (validInput) {
         e.target.value = valInt
@@ -246,7 +399,14 @@ export default {
         } else {
           valInt += 'px'
         }
+        if (styleType === 'fontSize') {
+          style['lineHeight'] = valInt
+        }
+        if (styleType === 'paddingTop') {
+          style['paddingBottom'] = valInt
+        }
         style[styleType] = valInt
+        console.log(style)
         this.changeStyle({
           id: this.editing,
           style
@@ -256,7 +416,7 @@ export default {
     validInput (e, styleType) {
       this.editStyle(e.target.value, styleType, true, e)
     },
-    showColorSelector (e) {
+    showColorSelector (e, colorType) {
       e.stopPropagation()
       var self = this
       var x = e.clientX
@@ -271,28 +431,36 @@ export default {
       }
       this.CSPosition.top = y + 'px'
       this.CSPosition.left = x + 'px'
-      if (!this.colorSelectorShow) {
-        this.colorSelectorShow = true
+      if (!this[colorType]) {
+        this[colorType] = true
         $(document).on('click.hideCS', function (e) {
           if ($(e.target).parents('.color-picker').length === 0) {
             $(this).off('.hideCS')
-            self.colorSelectorShow = false
+            self[colorType] = false
           }
         })
       } else {
-        this.colorSelectorShow = false
+        this[colorType] = false
       }
     },
     changeColor (color) {
+      this.curEle.style.color = color.hex
+    },
+    changeBgColor (color) {
       this.curEle.style.backgroundColor = color.hex
     }
   },
   mounted () {
+    var self = this
     this.curParEle = this.elements[0]
     this.$nextTick(() => {
       /* eslint-disable no-unused-vars */
       var draggie = new Draggabilly('.html-editor-oprater', {
         handle: '.html-editor-oprater-title'
+      })
+      $('.html-editor-target').on('click', function (e) {
+        self.editing = 0
+        e.stopPropagation()
       })
     })
   }
@@ -314,8 +482,8 @@ export default {
   position: relative;
 }
 .html-editor-oprater{
-  width: 220px;
-  height: 600px;
+  width: 222px;
+  height: 720px;
   margin-bottom: 20px;
   background-color: #fff;
   border-radius: 5px;
@@ -336,6 +504,15 @@ export default {
   height: 100%;
   width: 160px;
   background-color: #232527;
+  vertical-align: top;
+}
+.html-editor-meta-inner{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 .html-editor-oprater-title{
   height: 40px;
@@ -348,11 +525,12 @@ export default {
   cursor: move;
 }
 .html-editor-oprater-content{
-  height: calc(100% - 76px);
+  height: calc(100% - 112px);
   padding: 0 10px;
 }
-.html-editor-meta div{
-  margin: 20px 0;
+.html-editor-meta-temp{
+  margin: 10px 0;
+  cursor: pointer;
 }
 .button{
   height: 36px;
@@ -363,6 +541,16 @@ export default {
   background-color: #20A0FF;
   color: #fff;
   outline: none;
+  cursor: pointer;
+}
+.button.del{
+  background-color: #FF4949;
+}
+.button.del:hover{
+  background-color: #ff8181;
+}
+.button.del:active{
+  background-color: #d23232;
 }
 .button:hover{
   background-color: #58B7FF;
@@ -460,7 +648,7 @@ export default {
   margin-bottom: 0px;
   font-size: 0px;
 }
-.ipanel-html-editor .el-input__inner{
+.ipanel-html-editor .select-right .el-input__inner{
   border-left: none;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
