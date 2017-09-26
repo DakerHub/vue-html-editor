@@ -1,7 +1,8 @@
 <template>
   <div class="ipanel-element" :class="[editing === element.id ? 'editing' : '', element.editable ? '' : 'no-edit', className]" :style="elementCopy.style">
-    <span class="ipanel-element-text">{{element.text}}</span>
-    <div class="ipanel-element-inner">
+    <span v-if="element.text" class="ipanel-element-text">{{element.text}}</span>
+    <img v-if="element.img" :src="element.img" class="ipanel-element-img"></img>
+    <div class="ipanel-element-inner" v-if="element.children && element.children.length > 0">
       <i-element
         v-for="element in elementCopy.children"
         :key="element.name"
@@ -254,6 +255,10 @@ export default {
   width: 100%;
   display: inline-block;
   text-align: inherit;
+}
+.ipanel-element-img{
+  width: 100%;
+  height: 100%;
 }
 .dot-n{
   left: calc(50% - 6px);

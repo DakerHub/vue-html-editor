@@ -8,7 +8,10 @@
           v-for="temp in eleTemp"
           :key="temp.name"
           :style="temp.style"
-          @click="newElement(temp)">{{temp.text}}</div>
+          @click="newElement(temp)">
+          <div v-if="temp.text">{{temp.text}}</div>
+          <img v-if="temp.img" :src="temp.img" class="html-editor-meta-temp-img"></img>
+        </div>
       </div>
     </div>
     <!-- 元素模板选择区域end -->
@@ -92,6 +95,39 @@
           </el-form-item>
           <!-- 选择背景颜色end -->
 
+          <!-- 调节边框宽度begin -->
+          <el-form-item label="边框宽度">
+              <input
+              :class="['input-left', curEle.editable ? '' : 'disabled']"
+              type="number"
+              :disabled="!curEle.editable"
+              :value="parseInt(curEle.style.borderWidth || 0) || 0"
+              @input="(e) => {editStyle(e.target.value, 'borderWidth')}"
+              @blur="(e) => {validInput(e, 'borderWidth')}">
+              <span class="input-right">px</span>
+          </el-form-item>
+          <!-- 调节边框宽度end -->
+
+          <!-- 调节边框样式begin -->
+          <el-form-item label="边框样式">
+              <el-select 
+              v-model="curEle.style.borderStyle" 
+              size="mini"
+              :disabled="!curEle.editable || !curEle.style.borderWidth">
+              <el-option label="实线" value="solid"></el-option>
+              <el-option label="虚线" value="dashed"></el-option>
+              <el-option label="点线" value="dotted"></el-option>
+            </el-select>
+          </el-form-item>
+          <!-- 调节边框样式end -->
+
+          <!-- 调节边框颜色begin -->
+          <el-form-item label="边框颜色">
+              <span class="color-preview" :style="{backgroundColor: curEle.style.borderColor || '#000'}"></span>
+              <el-button @click="(e) => { showColorSelector(e, 'bdColorSelectorShow') }" :disabled="!curEle.style.borderWidth" size="mini" class="color-btn">选择颜色</el-button>
+          </el-form-item>
+          <!-- 调节边框颜色end -->
+
           <!-- 调节圆角半径begin -->
           <el-form-item label="圆角半径">
             <input
@@ -161,6 +197,7 @@
             </el-radio-group>
           </el-form-item>
           <!-- 调节文字上下边距end -->
+
           <!-- 调节文字上下边距begin -->
           <el-form-item label="文字加粗">
             <el-switch
@@ -173,6 +210,8 @@
             </el-switch>
           </el-form-item>
           <!-- 调节文字上下边距end -->
+
+         
         </el-form>
       </div>
       <button @click="del" class="button del">删除元素</button>
@@ -181,6 +220,7 @@
     <!-- 元素属性编辑区域end -->
     <color-picker v-show="bgColorSelectorShow" :style="CSPosition" :value="curEle.style.backgroundColor||'#fff'" @input="changeBgColor" class="color-picker"></color-picker>
     <color-picker v-show="colorSelectorShow" :style="CSPosition" :value="curEle.style.color||'#fff'" @input="changeColor" class="color-picker"></color-picker>
+    <color-picker v-show="bdColorSelectorShow" :style="CSPosition" :value="curEle.style.borderColor||'#fff'" @input="changeBdColor" class="color-picker"></color-picker>
   </div>
 </template>
 <script>
@@ -206,6 +246,7 @@ export default {
       },
       colorSelectorShow: false,
       bgColorSelectorShow: false,
+      bdColorSelectorShow: false,
       curParEle: {
         style: {
           height: 0,
@@ -252,6 +293,9 @@ export default {
             width: '80px',
             height: '80px',
             borderRadius: '5px',
+            borderWidth: '',
+            borderColor: '',
+            borderStyle: '',
             color: '',
             backgroundColor: '#b5b5b5',
             zIndex: 1
@@ -262,6 +306,28 @@ export default {
           moveable: true,
           resizeable: true,
           children: []
+        },
+        {
+          name: 'box',
+          style: {
+            top: '0px',
+            left: '0px',
+            width: '80px',
+            height: '80px',
+            borderRadius: '5px',
+            borderWidth: '',
+            borderColor: '',
+            borderStyle: '',
+            color: '',
+            backgroundColor: '#b5b5b5',
+            zIndex: 1
+          },
+          inParent: true,
+          tag: 'img',
+          img: 'http://ostjp7jb4.bkt.clouddn.com/17-9-19/40861607.jpg',
+          editable: true,
+          moveable: true,
+          resizeable: true
         },
         {
           name: 'h1',
@@ -279,6 +345,9 @@ export default {
             paddingBottom: '10px',
             color: '#8c8c8c',
             borderRadius: '0px',
+            borderWidth: '',
+            borderColor: '',
+            borderStyle: '',
             backgroundColor: '',
             zIndex: 1
           },
@@ -448,6 +517,9 @@ export default {
     },
     changeBgColor (color) {
       this.curEle.style.backgroundColor = color.hex
+    },
+    changeBdColor (color) {
+      this.curEle.style.borderColor = color.hex
     }
   },
   mounted () {
@@ -513,6 +585,10 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+}
+.html-editor-meta-temp-img{
+  width: 100%;
+  height: 100%;
 }
 .html-editor-oprater-title{
   height: 40px;

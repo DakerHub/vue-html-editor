@@ -14,7 +14,11 @@ function creatHtml (eles) {
   var htmlStr = ''
   eles.forEach(function (ele) {
     htmlStr += '<div class="ipanel-element" style="' + obj2Str(ele.style) + '">'
-    htmlStr += '<span>' + (ele.text || '') + '</span>'
+    if (ele.text) {
+      htmlStr += '<span>' + (ele.text || '') + '</span>'
+    } else if (ele.img) {
+      htmlStr += '<img src="' + ele.img + '" style="height:100%;width:100%;"></img>'
+    }
     htmlStr += '<div class="ipanel-element-inner">'
     Array.isArray(ele.children) && (htmlStr += creatHtml(ele.children))
     htmlStr += '</div></div>'
