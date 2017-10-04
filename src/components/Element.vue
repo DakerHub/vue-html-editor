@@ -9,8 +9,14 @@
         :element="element"
         :curParEle="curParEle"
         :editing="editing"
+        @show-img-selector="showImgSelector"
         @edit-element="editElement">
       </i-element>
+    </div>
+    <div class="element-edit-btns" v-if="element.editable">
+      <button @click="showImgSelector" v-if="element.img" type="button" class="element-edit-btn">选择图片</button>
+      <button type="button" class="element-edit-btn">移至上层</button>
+      <button type="button" class="element-edit-btn">移至下层</button>
     </div>
     <span @mousedown="recodePosition($event, 0, 1)" v-show="enableDots.includes('01')" class="dot dot-n"></span>
     <span @mousedown="recodePosition($event, -1, 0)" v-show="enableDots.includes('-10')" class="dot dot-e"></span>
@@ -187,6 +193,9 @@ export default {
     },
     editElement (ele) {
       this.$emit('edit-element', ele)
+    },
+    showImgSelector () {
+      this.$emit('show-img-selector')
     }
   },
   mounted () {
@@ -235,6 +244,31 @@ export default {
   background-color: #fff;
   border: thin solid #0af;
 }
+.element-edit-btns{
+  position: absolute;
+  top: 0px;
+  right: -120px;
+  width: 100px;
+  padding: 10px 0;
+  display: none;
+  box-shadow: rgba(111, 111, 111, 0.5) 0px 0px 11px 2px;
+  border-radius: 5px;
+  background-color: #fff;
+}
+.element-edit-btn{
+  height: 36px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  background-color: #fff;
+}
+.element-edit-btn:hover{
+  color: #fff;
+  background-color: #20A0FF;
+}
+.editing>.element-edit-btns{
+  display: block;
+}
 .ipanel-element:not(.no-edit):hover{
   cursor: move;
   outline: thin dashed #0af;
@@ -243,6 +277,7 @@ export default {
 .ipanel-element.editing:not(.no-edit){
   outline: thin dashed #00d0cd;
   outline-offset: 6px;
+  z-index: 99 !important;
 }
 .ipanel-element.is-dragging:not(.no-edit){
   background-color: #3ebfff !important;

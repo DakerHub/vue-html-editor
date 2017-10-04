@@ -26,6 +26,7 @@
         :curParEle="curParEle"
         :editing="editing"
         @style-change="changeStyle"
+        @show-img-selector="imgSelectShow = true"
         @edit-element="editElement">
       </i-element>
     </div>
@@ -221,10 +222,12 @@
     <color-picker v-show="bgColorSelectorShow" :style="CSPosition" :value="curEle.style.backgroundColor||'#fff'" @input="changeBgColor" class="color-picker"></color-picker>
     <color-picker v-show="colorSelectorShow" :style="CSPosition" :value="curEle.style.color||'#fff'" @input="changeColor" class="color-picker"></color-picker>
     <color-picker v-show="bdColorSelectorShow" :style="CSPosition" :value="curEle.style.borderColor||'#fff'" @input="changeBdColor" class="color-picker"></color-picker>
+    <img-selector @finish-select-img="changeImg" :show.sync="imgSelectShow"></img-selector>
   </div>
 </template>
 <script>
 import IElement from './Element'
+import ImgSelector from './ImgSelector'
 import util from './../assets/js/util.js'
 import Draggabilly from 'draggabilly'
 import { Chrome } from 'vue-color'
@@ -237,6 +240,7 @@ export default {
       backgroundColor: {
         hex: '#fff'
       },
+      imgSelectShow: false,
       CSPosition: {
         top: 0,
         left: 0
@@ -314,7 +318,7 @@ export default {
             left: '0px',
             width: '80px',
             height: '80px',
-            borderRadius: '5px',
+            borderRadius: '0px',
             borderWidth: '',
             borderColor: '',
             borderStyle: '',
@@ -363,6 +367,7 @@ export default {
   },
   components: {
     IElement,
+    ImgSelector,
     ColorPicker: Chrome
   },
   methods: {
@@ -401,7 +406,6 @@ export default {
       util.findInTree(this.elements, function (ele, i, arr) {
         if (ele.id === pId) {
           self.curParEle = ele
-          console.log(ele.style.height, ele.style.width)
           return false
         } else {
           return true
@@ -429,6 +433,10 @@ export default {
         }
       }
       this.editing = 0
+    },
+    changeImg (url) {
+      this.curEle.img = url
+      console.log(url)
     },
     editStyle (val, styleType, validInput, e) {
       var valInt = parseInt(val || 1)
@@ -704,6 +712,23 @@ export default {
 .color-btn{
   vertical-align: middle;
   margin-left: 5px;
+}
+@media screen and (max-height: 720px){
+.html-editor-oprater{
+  height: calc(100% - 20px);
+  width: 246px;
+  top: 10px;
+}
+.html-editor-oprater-content{
+  height: calc(100% - 112px);
+  overflow: auto;
+}
+.html-editor-container{
+  overflow: auto;
+}
+.html-editor-target{
+  top: 0px !important;
+}
 }
 </style>
 <style>
